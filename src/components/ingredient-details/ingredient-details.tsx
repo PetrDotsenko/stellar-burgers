@@ -1,14 +1,18 @@
 import { FC } from 'react';
-import { Preloader } from '../ui/preloader';
-import { IngredientDetailsUI } from '../ui/ingredient-details';
+import { Preloader, IngredientDetailsUI } from '@ui';
+import { useSelector } from '../../services/store';
+import { TIngredient } from '@utils-types';
 
 export const IngredientDetails: FC = () => {
-  /** TODO: взять переменную из стора */
-  const ingredientData = null;
+  const path = window.location.pathname;
+  const idFromUrl = path.split('/ingredients/')[1];
+  const allIngredients = useSelector((state) => state.ingredients.ingredients);
+  const foundIngredient = allIngredients.find((item) => item._id === idFromUrl);
 
-  if (!ingredientData) {
+  if (!foundIngredient) {
     return <Preloader />;
   }
 
-  return <IngredientDetailsUI ingredientData={ingredientData} />;
+  // инФормация об ингредиенте
+  return <IngredientDetailsUI ingredientData={foundIngredient} />;
 };
