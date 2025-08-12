@@ -1,61 +1,74 @@
+import React, { useEffect, useState } from 'react';
 import { ProfileUI } from '@ui-pages';
-import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import { Preloader } from '@ui';
+import { useDispatch, useSelector } from '../../services/store';
+import { updateUser } from '../../services/slices/user-slice';
 
-export const Profile: FC = () => {
-  /** TODO: взять переменную из стора */
-  const user = {
+// компонент профиль
+export const Profile: React.FC = () => {
+  // получаем данные юзера из стора
+  const dispatch = useDispatch();
+  const userData = useSelector((state) => state.auth.user);
+  const isLoading = useSelector((state) => state.auth.loading);
+
+  // локальное состояние формы
+  const [form, setForm] = useState({
     name: '',
-    email: ''
-  };
-
-  const [formValue, setFormValue] = useState({
-    name: user.name,
-    email: user.email,
+    email: '',
     password: ''
   });
 
+  // когда юзер загружается, вставляем данные в форму
   useEffect(() => {
-    setFormValue((prevState) => ({
-      ...prevState,
-      name: user?.name || '',
-      email: user?.email || ''
-    }));
-  }, [user]);
+    setForm({
+      name: userData?.name || '',
+      email: userData?.email || '',
+      password: ''
+    });
+  }, [userData]);
 
-  const isFormChanged =
-    formValue.name !== user?.name ||
-    formValue.email !== user?.email ||
-    !!formValue.password;
+  // проверяем изменена ли форма
+  const formChanged =
+    form.name !== userData?.name ||
+    form.email !== userData?.email ||
+    form.password.length > 0;
 
-  const handleSubmit = (e: SyntheticEvent) => {
-    e.preventDefault();
+  // изменение инпутов
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleCancel = (e: SyntheticEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormValue({
-      name: user.name,
-      email: user.email,
+    dispatch(updateUser(form));
+  };
+
+  // сброс изменений
+  const handleCancel = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForm({
+      name: userData.name,
+      email: userData.email,
       password: ''
     });
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormValue((prevState) => ({
-      ...prevState,
-      [e.target.name]: e.target.value
-    }));
-  };
+  // если грузится, показываем прелоадер
+  if (isLoading) {
+    return <Preloader />;
+  }
 
+  // рендер формы
   return (
     <ProfileUI
-      formValue={formValue}
-      isFormChanged={isFormChanged}
+      formValue={form}
+      isFormChanged={formChanged}
       handleCancel={handleCancel}
       handleSubmit={handleSubmit}
-      handleInputChange={handleInputChange}
+      handleInputChange={handleChange}
     />
   );
-
-  return null;
 };

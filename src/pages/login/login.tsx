@@ -1,22 +1,53 @@
-import { FC, SyntheticEvent, useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+
 import { LoginUI } from '@ui-pages';
+import { useDispatch, useSelector } from '../../services/store';
+import { login, setLoginSuccess } from '../../services/slices/user-slice';
+import { Preloader } from '@ui';
 
-export const Login: FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+type LoginForm = {
+  email: string;
+  password: string;
+};
 
-  const handleSubmit = (e: SyntheticEvent) => {
-    e.preventDefault();
+export const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+
+  const isLoading = useSelector((state) => state.auth.loading);
+
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    dispatch(login({ email, password }))
+      .unwrap()
+      .then(() => {
+        dispatch(setLoginSuccess(true));
+        navigate(from, { replace: true });
+      })
+      .catch((error) => {
+        console.error('Ошибка входа:', error);
+      });
   };
+
+  if (isLoading) {
+    return <Preloader />;
+  }
 
   return (
     <LoginUI
       errorText=''
       email={email}
-      setEmail={setEmail}
+      setEmail={(e) => setEmail(e.target.value)}
       password={password}
-      setPassword={setPassword}
-      handleSubmit={handleSubmit}
+      setPassword={(e) => setPassword(e.target.value)}
+      handleSubmit={handleFormSubmit}
     />
   );
 };

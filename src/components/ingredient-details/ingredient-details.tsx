@@ -1,14 +1,32 @@
-import { FC } from 'react';
-import { Preloader } from '../ui/preloader';
-import { IngredientDetailsUI } from '../ui/ingredient-details';
+import React, { FC } from 'react';
+import { Preloader, IngredientDetailsUI } from '@ui';
+import { useSelector } from '../../services/store';
+import styles from '../ui/ingredient-details/ingredient-details.module.css';
 
-export const IngredientDetails: FC = () => {
-  /** TODO: взять переменную из стора */
-  const ingredientData = null;
+type Props = {
+  showTitle: boolean;
+};
 
-  if (!ingredientData) {
+export const IngredientDetails: FC<Props> = ({ showTitle }) => {
+  const path = window.location.pathname;
+  const idFromUrl = path.split('/ingredients/')[1];
+  const allIngredients = useSelector((state) => state.ingredients.ingredients);
+  const foundIngredient = allIngredients.find((item) => item._id === idFromUrl);
+
+  if (!foundIngredient) {
     return <Preloader />;
   }
 
-  return <IngredientDetailsUI ingredientData={ingredientData} />;
+  return (
+    <main className={styles.page}>
+      {showTitle && (
+        <h3 className={`${styles.title} text text_type_main-large pt-30`}>
+          Детали ингредиента
+        </h3>
+      )}
+      <div className={styles.center}>
+        <IngredientDetailsUI ingredientData={foundIngredient} />
+      </div>
+    </main>
+  );
 };

@@ -1,21 +1,34 @@
-import { FC, useMemo } from 'react';
-import { Preloader } from '../ui/preloader';
-import { OrderInfoUI } from '../ui/order-info';
+import React, { FC, useEffect, useMemo } from 'react';
+import { Preloader, OrderInfoUI } from '@ui';
 import { TIngredient } from '@utils-types';
+import { useDispatch, useSelector } from '../../services/store';
+import { useParams } from 'react-router-dom';
+import { getOrderByNumber } from '../../services/slices/feedsSlice';
+import { fetchIngredients } from '../../services/slices/ingridientsSlice';
 
-export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+type TOrderInfo = {
+  isInModal: boolean;
+};
 
-  const ingredients: TIngredient[] = [];
+export const OrderInfo: FC<TOrderInfo> = ({ isInModal }) => {
+  const routeParams = useParams();
+  const currentNumber = parseInt(routeParams.number || '0', 10);
+  const dispatch = useDispatch();
+
+  const ingredients = useSelector((store) => store.ingredients.ingredients);
+
+  useEffect(() => {
+    // запрашиваем заказ по номеру
+    if (!Number.isNaN(currentNumber) && currentNumber > 0) {
+      dispatch(getOrderByNumber(currentNumber));
+    }
+    // если ингредиенты ещё не загружены — подтянем их
+    if (!ingredients || ingredients.length === 0) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, currentNumber, ingredients.length]);
+
+  const orderData = useSelector((state) => state.feeds.orderByNumber);
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
@@ -63,5 +76,5 @@ export const OrderInfo: FC = () => {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  return <OrderInfoUI isInModal={isInModal} orderInfo={orderInfo} />;
 };
