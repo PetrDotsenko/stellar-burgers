@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
 export type TModalUIProps = {
-  title?: React.ReactNode;
+  title: React.ReactNode;
   onClose: () => void;
   children?: ReactNode;
   dataCy?: string;

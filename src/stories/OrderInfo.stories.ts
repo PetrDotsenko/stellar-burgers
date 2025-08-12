@@ -43,6 +43,7 @@ export const DefaultOrderInfo: Story = {
       updatedAt: '',
       number: 2,
       ingredients: ['Булка', 'Начинка']
-    }
+    },
+    isInModal: false
   }
 };

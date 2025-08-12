@@ -4,10 +4,10 @@ import { useSelector } from '../../services/store';
 import styles from '../ui/ingredient-details/ingredient-details.module.css';
 
 type Props = {
-  showTitle?: boolean;
+  showTitle: boolean;
 };
 
-export const IngredientDetails: FC<Props> = ({ showTitle = true }) => {
+export const IngredientDetails: FC<Props> = ({ showTitle }) => {
   const path = window.location.pathname;
   const idFromUrl = path.split('/ingredients/')[1];
   const allIngredients = useSelector((state) => state.ingredients.ingredients);
@@ -20,7 +20,7 @@ export const IngredientDetails: FC<Props> = ({ showTitle = true }) => {
   return (
     <main className={styles.page}>
       {showTitle && (
-        <h3 className={`${styles.title} text text_type_main-large`}>
+        <h3 className={`${styles.title} text text_type_main-large pt-30`}>
           Детали ингредиента
         </h3>
       )}

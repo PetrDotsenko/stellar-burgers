@@ -107,12 +107,15 @@ const AppContent: React.FC = () => {
           path='/profile/orders/:number'
           element={
             <ProtectedRoute>
-              <OrderInfo />
+              <OrderInfo isInModal={false} />
             </ProtectedRoute>
           }
         />
-        <Route path='/ingredients/:id' element={<IngredientDetails />} />
-        <Route path='/feed/:number' element={<OrderInfo />} />
+        <Route
+          path='/ingredients/:id'
+          element={<IngredientDetails showTitle={true} />}
+        />
+        <Route path='/feed/:number' element={<OrderInfo isInModal={false} />} />
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
@@ -121,8 +124,8 @@ const AppContent: React.FC = () => {
           <Route
             path='/feed/:number'
             element={
-              <Modal title='Детали заказа' onClose={closeFeedModal}>
-                <OrderInfo />
+              <Modal onClose={closeFeedModal}>
+                <OrderInfo isInModal={true} />
               </Modal>
             }
           />
@@ -130,7 +133,7 @@ const AppContent: React.FC = () => {
             path='/ingredients/:id'
             element={
               <Modal title='Детали ингредиента' onClose={closeIngredientModal}>
-                <IngredientDetails />
+                <IngredientDetails showTitle={false} />
               </Modal>
             }
           />
@@ -138,8 +141,8 @@ const AppContent: React.FC = () => {
             path='/profile/orders/:number'
             element={
               <ProtectedRoute>
-                <Modal title='Детали заказа' onClose={closeProfileOrderModal}>
-                  <OrderInfo />
+                <Modal onClose={closeProfileOrderModal}>
+                  <OrderInfo isInModal={true} />
                 </Modal>
               </ProtectedRoute>
             }

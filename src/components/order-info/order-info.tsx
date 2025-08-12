@@ -6,7 +6,11 @@ import { useParams } from 'react-router-dom';
 import { getOrderByNumber } from '../../services/slices/feedsSlice';
 import { fetchIngredients } from '../../services/slices/ingridientsSlice';
 
-export const OrderInfo: FC = () => {
+type TOrderInfo = {
+  isInModal: boolean;
+};
+
+export const OrderInfo: FC<TOrderInfo> = ({ isInModal }) => {
   const routeParams = useParams();
   const currentNumber = parseInt(routeParams.number || '0', 10);
   const dispatch = useDispatch();
@@ -72,5 +76,5 @@ export const OrderInfo: FC = () => {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  return <OrderInfoUI isInModal={isInModal} orderInfo={orderInfo} />;
 };
