@@ -1,19 +1,19 @@
 import '../../index.css';
+import React, { useEffect, useMemo } from 'react';
 import styles from './app.module.css';
-import { useEffect } from 'react';
 import {
-  Route,
+  BrowserRouter as Router,
   Routes,
+  Route,
   useLocation,
-  useNavigate,
-  BrowserRouter
+  useNavigate
 } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from '../../services/store';
 
 import {
-  Feed,
   ConstructorPage,
+  Feed,
   NotFound404,
   Register,
   Login,
@@ -22,29 +22,37 @@ import {
   ProfileOrders,
   ForgotPassword
 } from '@pages';
-
 import { AppHeader, Modal, OrderInfo, IngredientDetails } from '@components';
+
 import { useDispatch } from '../../services/store';
 import { fetchIngredients } from '../../services/slices/ingridientsSlice';
-import { ProtectedRoute } from '../protected-route/ProtectedRoute';
 import { fetchUser } from '../../services/slices/user-slice';
+import { ProtectedRoute } from '../protected-route/ProtectedRoute';
 
-const AppContent = () => {
+const AppContent: React.FC = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const backgroundLocation = location?.state?.background;
+  const background = (location.state as { background?: Location })?.background;
 
   useEffect(() => {
     dispatch(fetchIngredients());
     dispatch(fetchUser());
   }, [dispatch]);
 
+  const closeFeedModal = useMemo(() => () => navigate('/feed'), [navigate]);
+  const closeIngredientModal = useMemo(() => () => navigate('/'), [navigate]);
+  const closeProfileOrderModal = useMemo(
+    () => () => navigate('/profile/orders'),
+    [navigate]
+  );
+
   return (
     <div className={styles.app}>
       <AppHeader />
-      <Routes location={backgroundLocation || location}>
+
+      <Routes location={background ?? location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route
@@ -108,12 +116,12 @@ const AppContent = () => {
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
-      {backgroundLocation && (
+      {background && (
         <Routes>
           <Route
             path='/feed/:number'
             element={
-              <Modal title='Детали заказа' onClose={() => navigate('/feed')}>
+              <Modal title='Детали заказа' onClose={closeFeedModal}>
                 <OrderInfo />
               </Modal>
             }
@@ -121,7 +129,7 @@ const AppContent = () => {
           <Route
             path='/ingredients/:id'
             element={
-              <Modal title='Детали ингредиента' onClose={() => navigate('/')}>
+              <Modal title='Детали ингредиента' onClose={closeIngredientModal}>
                 <IngredientDetails />
               </Modal>
             }
@@ -130,10 +138,7 @@ const AppContent = () => {
             path='/profile/orders/:number'
             element={
               <ProtectedRoute>
-                <Modal
-                  title='Детали заказа'
-                  onClose={() => navigate('/profile/orders')}
-                >
+                <Modal title='Детали заказа' onClose={closeProfileOrderModal}>
                   <OrderInfo />
                 </Modal>
               </ProtectedRoute>
@@ -145,12 +150,12 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
+const AppRoot: React.FC = () => (
   <Provider store={store}>
-    <BrowserRouter>
+    <Router>
       <AppContent />
-    </BrowserRouter>
+    </Router>
   </Provider>
 );
 
-export default App;
+export default AppRoot;

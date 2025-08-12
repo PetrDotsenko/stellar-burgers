@@ -1,4 +1,4 @@
-.burger_constructor {
+.root {
   width: 600px;
   color: #f2f2f3;
   display: flex;
@@ -6,27 +6,26 @@
   padding-bottom: 20px;
 }
 
-.elements {
+.list {
   min-height: 100px;
-
   overflow-y: scroll;
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 
-.total {
+.summary {
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 
-.cost {
+.priceBox {
   display: flex;
   align-items: center;
 }
 
-.text {
+.priceText {
   font-family: Iceland;
   font-style: normal;
   font-weight: normal;
@@ -34,7 +33,7 @@
   line-height: 36px;
 }
 
-.noBuns {
+.placeholder {
   box-sizing: border-box;
   padding: 16px 24px;
   display: flex;
@@ -50,25 +49,25 @@
   margin-left: 44px;
 }
 
-.noBunsTop {
+.placeholderTop {
   border-radius: var(--top-constructor-item-border-radius);
 }
 
-.noBunsBottom {
+.placeholderBottom {
   border-radius: var(--bottom-constructor-item-border-radius);
 }
 
-.element {
+.bunWrap {
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 
-.element:last-child {
+.bunWrap:last-child {
   margin-bottom: 0;
 }
 
-.element_fullwidth {
+.elementFullWidth {
   display: flex;
   flex-direction: column;
   width: 100%;

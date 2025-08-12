@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo } from 'react';
+import React, { FC, useEffect, useMemo } from 'react';
 import { Preloader, OrderInfoUI } from '@ui';
 import { TIngredient } from '@utils-types';
 import { useDispatch, useSelector } from '../../services/store';
@@ -8,21 +8,23 @@ import { fetchIngredients } from '../../services/slices/ingridientsSlice';
 
 export const OrderInfo: FC = () => {
   const routeParams = useParams();
-  const currentNumber = parseInt(routeParams.number || '0');
+  const currentNumber = parseInt(routeParams.number || '0', 10);
   const dispatch = useDispatch();
 
+  const ingredients = useSelector((store) => store.ingredients.ingredients);
+
   useEffect(() => {
-    dispatch(getOrderByNumber(currentNumber));
-    dispatch(fetchIngredients());
-  }, [dispatch]);
+    // запрашиваем заказ по номеру
+    if (!Number.isNaN(currentNumber) && currentNumber > 0) {
+      dispatch(getOrderByNumber(currentNumber));
+    }
+    // если ингредиенты ещё не загружены — подтянем их
+    if (!ingredients || ingredients.length === 0) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, currentNumber, ingredients.length]);
 
-  const orderData = useSelector(function (state) {
-    return state.feeds.orderByNumber;
-  });
-
-  const ingredients = useSelector(function (store) {
-    return store.ingredients.ingredients;
-  });
+  const orderData = useSelector((state) => state.feeds.orderByNumber);
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {

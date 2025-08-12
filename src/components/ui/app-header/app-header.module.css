@@ -18,6 +18,11 @@
   display: flex;
   text-decoration: none;
   transition: color 0.2s ease;
+  color: #8585ad;
+}
+
+.link p {
+  color: inherit;
 }
 
 .link_active {

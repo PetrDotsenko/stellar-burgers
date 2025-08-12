@@ -1,9 +1,13 @@
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { Preloader, IngredientDetailsUI } from '@ui';
 import { useSelector } from '../../services/store';
-import { TIngredient } from '@utils-types';
+import styles from '../ui/ingredient-details/ingredient-details.module.css';
 
-export const IngredientDetails: FC = () => {
+type Props = {
+  showTitle?: boolean;
+};
+
+export const IngredientDetails: FC<Props> = ({ showTitle = true }) => {
   const path = window.location.pathname;
   const idFromUrl = path.split('/ingredients/')[1];
   const allIngredients = useSelector((state) => state.ingredients.ingredients);
@@ -13,6 +17,16 @@ export const IngredientDetails: FC = () => {
     return <Preloader />;
   }
 
-  // инФормация об ингредиенте
-  return <IngredientDetailsUI ingredientData={foundIngredient} />;
+  return (
+    <main className={styles.page}>
+      {showTitle && (
+        <h3 className={`${styles.title} text text_type_main-large`}>
+          Детали ингредиента
+        </h3>
+      )}
+      <div className={styles.center}>
+        <IngredientDetailsUI ingredientData={foundIngredient} />
+      </div>
+    </main>
+  );
 };
