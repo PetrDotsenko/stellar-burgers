@@ -17,7 +17,6 @@ export const IngredientsCategoryUI = forwardRef<
           ingredient={ingredient}
           key={ingredient._id}
           count={ingredientsCounters[ingredient._id]}
-          dataCy={ingredient._id}
         />
       ))}
     </ul>

@@ -1,22 +1,10 @@
-import React, { useEffect } from 'react';
+import { FC } from 'react';
+import { useAppSelector } from '../../services/store';
 import { ProfileOrdersUI } from '@ui-pages';
-import { useDispatch, useSelector } from '../../services/store';
-import { fetchUserOrders } from '../../services/slices/user-slice';
-import { Preloader } from '@ui';
 
-// компонент показывает заказы в профиле
-export const ProfileOrders: React.FC = () => {
-  const dispatch = useDispatch();
-  const userOrders = useSelector((state) => state.auth.orders);
-  const isLoading = useSelector((state) => state.auth.loading);
+export const ProfileOrders: FC = () => {
+  // Получаем заказы пользователя из стора
+  const orders = useAppSelector((state) => state.orders.items) ?? [];
 
-  useEffect(() => {
-    dispatch(fetchUserOrders());
-  }, [dispatch]);
-
-  if (isLoading) {
-    return <Preloader />;
-  }
-
-  return <ProfileOrdersUI orders={userOrders} />;
+  return <ProfileOrdersUI orders={orders} />;
 };

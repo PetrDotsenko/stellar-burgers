@@ -17,12 +17,7 @@
 .link {
   display: flex;
   text-decoration: none;
-  transition: color 0.2s ease;
-  color: #8585ad;
-}
-
-.link p {
-  color: inherit;
+  color: var(--text-inactive-color);
 }
 
 .link_active {

@@ -1,38 +1,17 @@
-import React, { FC, useEffect, useMemo } from 'react';
-import { Preloader, OrderInfoUI } from '@ui';
+import { FC, useMemo } from 'react';
+import { Preloader } from '../ui/preloader';
+import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
-import { useDispatch, useSelector } from '../../services/store';
-import { useParams } from 'react-router-dom';
-import { getOrderByNumber } from '../../services/slices/feedsSlice';
-import { fetchIngredients } from '../../services/slices/ingridientsSlice';
+import { useAppSelector } from '../../services/store';
+import { selectCurrentOrder } from '../../services/slices/orders-slice';
+import { selectIngredientsItems } from '../../services/slices/ingredients-slice';
 
-type TOrderInfo = {
-  isInModal: boolean;
-};
+export const OrderInfo: FC = () => {
+  const orderData = useAppSelector(selectCurrentOrder);
+  const ingredients: TIngredient[] = useAppSelector(selectIngredientsItems);
 
-export const OrderInfo: FC<TOrderInfo> = ({ isInModal }) => {
-  const routeParams = useParams();
-  const currentNumber = parseInt(routeParams.number || '0', 10);
-  const dispatch = useDispatch();
-
-  const ingredients = useSelector((store) => store.ingredients.ingredients);
-
-  useEffect(() => {
-    // запрашиваем заказ по номеру
-    if (!Number.isNaN(currentNumber) && currentNumber > 0) {
-      dispatch(getOrderByNumber(currentNumber));
-    }
-    // если ингредиенты ещё не загружены — подтянем их
-    if (!ingredients || ingredients.length === 0) {
-      dispatch(fetchIngredients());
-    }
-  }, [dispatch, currentNumber, ingredients.length]);
-
-  const orderData = useSelector((state) => state.feeds.orderByNumber);
-
-  /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
-    if (!orderData || !ingredients.length) return null;
+    if (!orderData || !ingredients?.length) return null;
 
     const date = new Date(orderData.createdAt);
 
@@ -56,7 +35,7 @@ export const OrderInfo: FC<TOrderInfo> = ({ isInModal }) => {
 
         return acc;
       },
-      {}
+      {} as TIngredientsWithCount
     );
 
     const total = Object.values(ingredientsInfo).reduce(
@@ -76,5 +55,5 @@ export const OrderInfo: FC<TOrderInfo> = ({ isInModal }) => {
     return <Preloader />;
   }
 
-  return <OrderInfoUI isInModal={isInModal} orderInfo={orderInfo} />;
+  return <OrderInfoUI orderInfo={orderInfo} />;
 };

@@ -1,22 +1,32 @@
+import { FC, useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from '../../services/store';
+import { TOrder } from '../../utils/types';
+import {
+  fetchOrders,
+  selectOrdersLoading,
+  selectUserOrders
+} from '../../services/slices/orders-slice';
 import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
-import { FC, useEffect } from 'react';
-import { fetchFeeds } from '../../services/slices/feedsSlice';
-import { useDispatch, useSelector } from '../../services/store';
 
 export const Feed: FC = () => {
-  const dispatch = useDispatch();
-  const { orders } = useSelector((state) => state.feeds);
+  const dispatch = useAppDispatch();
 
+  const orders: TOrder[] = useAppSelector(selectUserOrders);
+  const isLoading = useAppSelector(selectOrdersLoading);
+
+  // Загружаем заказы при монтировании
   useEffect(() => {
-    dispatch(fetchFeeds());
-  }, [dispatch]);
+    if (!orders.length) {
+      dispatch(fetchOrders());
+    }
+  }, [dispatch, orders.length]);
 
-  if (!orders.length) {
+  if (isLoading) {
     return <Preloader />;
   }
 
   return (
-    <FeedUI orders={orders} handleGetFeeds={() => dispatch(fetchFeeds())} />
+    <FeedUI orders={orders} handleGetFeeds={() => dispatch(fetchOrders())} />
   );
 };

@@ -1,32 +1,24 @@
-import React, { FC } from 'react';
-import { Preloader, IngredientDetailsUI } from '@ui';
-import { useSelector } from '../../services/store';
-import styles from '../ui/ingredient-details/ingredient-details.module.css';
+import { FC } from 'react';
+import { useAppSelector } from '../../services/store';
+import { Preloader } from '../ui/preloader';
+import { IngredientDetailsUI } from '../ui/ingredient-details';
+import { selectIngredientsItems } from '../../services/slices/ingredients-slice';
+import { useMatch, useParams } from 'react-router-dom';
+import { TIngredient } from '@utils-types';
 
-type Props = {
-  showTitle: boolean;
-};
+export const IngredientDetails: FC = () => {
+  const { id: ingredientId } = useParams<{ id: string }>();
 
-export const IngredientDetails: FC<Props> = ({ showTitle }) => {
-  const path = window.location.pathname;
-  const idFromUrl = path.split('/ingredients/')[1];
-  const allIngredients = useSelector((state) => state.ingredients.ingredients);
-  const foundIngredient = allIngredients.find((item) => item._id === idFromUrl);
+  const ingredients = useAppSelector(selectIngredientsItems);
+  const areIngredientsLoading = useAppSelector(selectIngredientsItems);
 
-  if (!foundIngredient) {
+  if (areIngredientsLoading) {
     return <Preloader />;
   }
 
-  return (
-    <main className={styles.page}>
-      {showTitle && (
-        <h3 className={`${styles.title} text text_type_main-large pt-30`}>
-          Детали ингредиента
-        </h3>
-      )}
-      <div className={styles.center}>
-        <IngredientDetailsUI ingredientData={foundIngredient} />
-      </div>
-    </main>
-  );
+  const targetIngredient = ingredients.find(
+    (item) => item._id === ingredientId
+  ) as TIngredient;
+
+  return <IngredientDetailsUI ingredientData={targetIngredient} />;
 };

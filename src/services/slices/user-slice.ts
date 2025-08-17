@@ -1,197 +1,64 @@
-import {
-  getOrdersApi,
-  getUserApi,
-  loginUserApi,
-  logoutApi,
-  orderBurgerApi,
-  registerUserApi,
-  updateUserApi
-} from '@api';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { getUserApi, TRegisterData, updateUserApi } from '@api';
+import { RootState } from '../root-reducer';
+import { TUser } from '../../utils/types';
 
-import { TOrder } from '@utils-types';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { setCookie } from '../../utils/cookie';
-
-// начальное состояние
-const startState: {
-  success: boolean;
-  user: {
-    email: string;
-    name: string;
-  };
-  orders: Array<TOrder>;
-  lastOrder: TOrder | null;
-  orderRequestData: boolean;
-  loading: boolean;
-} = {
-  success: false,
-  user: {
-    email: '',
-    name: ''
-  },
-  orders: [],
-  lastOrder: null,
-  orderRequestData: false,
-  loading: false
+type UserState = {
+  user?: TUser | null;
+  isLoading: boolean;
+  updateLoading?: boolean;
 };
 
-// асинхронные экшены
-export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
-  const data = await getUserApi();
-  return data;
-});
+const userInitialState: UserState = {
+  isLoading: false
+};
 
-export const login = createAsyncThunk(
-  'user/login',
-  async (userData: { email: string; password: string }, thunkAPI) => {
-    try {
-      const response = await loginUserApi(userData);
-      localStorage.setItem('refreshToken', response.refreshToken);
-      setCookie('accessToken', response.accessToken);
-
-      return response;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(error);
-    }
-  }
-);
-
-export const register = createAsyncThunk(
-  'user/register',
-  async (newUser: any) => {
-    const result = await registerUserApi(newUser);
-    return result;
-  }
-);
-
-export const updateUser = createAsyncThunk(
-  'user/updateUser',
-  async (updatedUser: any) => await updateUserApi(updatedUser)
-);
-
-export const logout = createAsyncThunk(
-  'user/logout',
-  async () => await logoutApi()
-);
-
-export const fetchUserOrders = createAsyncThunk(
-  'user/fetchOrders',
+export const fetchUser = createAsyncThunk<TUser, void>(
+  'user/fetchUser',
   async () => {
-    const orders = await getOrdersApi();
-    return orders;
+    const res = await getUserApi();
+    return res.user;
   }
 );
 
-export const newUserOrder = createAsyncThunk(
-  'user/makeOrder',
-  async (orderData: string[]) => {
-    const res = await orderBurgerApi(orderData);
-    return res;
+export const patchUser = createAsyncThunk<TUser, Partial<TRegisterData>>(
+  'user/patchUser',
+  async (data) => {
+    const res = await updateUserApi(data);
+    return res.user;
   }
 );
 
-// создание слайса
-export const userSlice = createSlice({
+const userSlice = createSlice({
   name: 'user',
-  initialState: startState,
+  initialState: userInitialState,
   reducers: {
-    setLoginSuccess: (state, action) => {
-      state.success = action.payload;
-    },
-    setLastOrder: (state, action) => {
-      state.lastOrder = action.payload;
+    clearUser(state) {
+      state.user = null;
     }
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchUser.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
       })
-      .addCase(fetchUser.fulfilled, (state, action) => {
-        state.user = action.payload.user;
-        state.success = action.payload.success;
-        state.loading = false;
-      })
-      .addCase(fetchUser.rejected, (state) => {
-        state.loading = false;
-        state.success = false;
+      .addCase(fetchUser.fulfilled, (state, action: PayloadAction<TUser>) => {
+        state.isLoading = false;
+        state.user = action.payload;
       })
 
-      .addCase(login.pending, (state) => {
-        state.loading = true;
+      .addCase(patchUser.pending, (state) => {
+        state.updateLoading = true;
       })
-      .addCase(login.fulfilled, (state, action) => {
-        state.user = action.payload.user;
-        state.success = action.payload.success;
-        state.loading = false;
-      })
-      .addCase(login.rejected, (state) => {
-        state.loading = false;
-      })
-
-      .addCase(register.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(register.fulfilled, (state, action) => {
-        state.user = action.payload.user;
-        state.success = action.payload.success;
-        state.loading = false;
-      })
-      .addCase(register.rejected, (state) => {
-        state.loading = false;
-      })
-
-      .addCase(updateUser.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(updateUser.fulfilled, (state, action) => {
-        state.user = action.payload.user;
-        state.success = action.payload.success;
-        state.loading = false;
-      })
-      .addCase(updateUser.rejected, (state) => {
-        state.loading = false;
-      })
-
-      .addCase(logout.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(logout.fulfilled, (state) => {
-        state.user = { email: '', name: '' };
-        state.success = false;
-        state.loading = false;
-      })
-      .addCase(logout.rejected, (state) => {
-        state.loading = false;
-      })
-
-      .addCase(fetchUserOrders.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchUserOrders.fulfilled, (state, action) => {
-        state.orders = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchUserOrders.rejected, (state) => {
-        state.loading = false;
-      })
-
-      .addCase(newUserOrder.pending, (state) => {
-        state.orderRequestData = true;
-        state.loading = true;
-      })
-      .addCase(newUserOrder.fulfilled, (state, action) => {
-        state.lastOrder = action.payload.order;
-        state.orders.push(action.payload.order);
-        state.orderRequestData = false;
-        state.loading = false;
-      })
-      .addCase(newUserOrder.rejected, (state) => {
-        state.orderRequestData = false;
-        state.loading = false;
+      .addCase(patchUser.fulfilled, (state, action: PayloadAction<TUser>) => {
+        state.updateLoading = false;
+        state.user = action.payload;
       });
   }
 });
 
-export const { setLoginSuccess, setLastOrder } = userSlice.actions;
-export const userSliceReducer = userSlice.reducer;
+export const { clearUser } = userSlice.actions;
+export default userSlice.reducer;
+
+export const selectUser = (state: RootState) => state.user.user;
+export const selectUserLoading = (state: RootState) => state.user.isLoading;

@@ -1,61 +1,59 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, FC } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useSelector } from '../../services/store';
-import { BurgerIngredientsUI } from '@ui';
+
 import { TTabMode } from '@utils-types';
+import { BurgerIngredientsUI } from '../ui/burger-ingredients';
 
-export const BurgerIngredients: React.FC = () => {
-  const allIngredients = useSelector((state) => state.ingredients.ingredients);
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import {
+  fetchIngredients,
+  selectIngredientsItems,
+  selectIngredientsLoading
+} from '../../services/slices/ingredients-slice';
+import { TIngredient } from '../../utils/types';
 
-  const buns = useMemo(
-    () => allIngredients.filter((item) => item.type === 'bun'),
-    [allIngredients]
-  );
+export const BurgerIngredients: FC = () => {
+  // const dispatch = useAppDispatch();
+  const ingredients = useAppSelector(selectIngredientsItems);
+  const areIngredientsLoading = useAppSelector(selectIngredientsLoading);
 
-  const sauces = useMemo(
-    () => allIngredients.filter((item) => item.type === 'sauce'),
-    [allIngredients]
-  );
-
-  const mains = useMemo(
-    () => allIngredients.filter((item) => item.type === 'main'),
-    [allIngredients]
-  );
+  const buns: TIngredient[] = ingredients.filter((i) => i.type === 'bun');
+  const mains: TIngredient[] = ingredients.filter((i) => i.type === 'main');
+  const sauces: TIngredient[] = ingredients.filter((i) => i.type === 'sauce');
 
   const [currentTab, setCurrentTab] = useState<TTabMode>('bun');
+  const titleBunRef = useRef<HTMLHeadingElement>(null);
+  const titleMainRef = useRef<HTMLHeadingElement>(null);
+  const titleSaucesRef = useRef<HTMLHeadingElement>(null);
 
-  const titleBun = useRef<HTMLHeadingElement>(null);
-  const titleMain = useRef<HTMLHeadingElement>(null);
-  const titleSauce = useRef<HTMLHeadingElement>(null);
+  const [bunsRef, inViewBuns] = useInView({ threshold: 0 });
+  const [mainsRef, inViewFilling] = useInView({ threshold: 0 });
+  const [saucesRef, inViewSauces] = useInView({ threshold: 0 });
 
-  const [bunRef, bunInView] = useInView({ threshold: 0 });
-  const [mainRef, mainInView] = useInView({ threshold: 0 });
-  const [sauceRef, sauceInView] = useInView({ threshold: 0 });
+  // useEffect(() => {
+  //   dispatch(fetchIngredients());
+  // }, [dispatch]);
 
   useEffect(() => {
-    if (bunInView) {
+    if (inViewBuns) {
       setCurrentTab('bun');
-    } else if (sauceInView) {
+    } else if (inViewSauces) {
       setCurrentTab('sauce');
-    } else if (mainInView) {
+    } else if (inViewFilling) {
       setCurrentTab('main');
     }
-  }, [bunInView, mainInView, sauceInView]);
+  }, [inViewBuns, inViewFilling, inViewSauces]);
 
-  const handleTabClick = (tab: string) => {
-    setCurrentTab(tab as TTabMode);
-
-    if (tab === 'bun' && titleBun.current) {
-      titleBun.current.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    if (tab === 'main' && titleMain.current) {
-      titleMain.current.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    if (tab === 'sauce' && titleSauce.current) {
-      titleSauce.current.scrollIntoView({ behavior: 'smooth' });
-    }
+  // BurgerIngredientsUI ожидает onTabClick: (val: string) => void — даём такую сигнатуру
+  const onTabClick = (tab: string) => {
+    const t = tab as TTabMode;
+    setCurrentTab(t);
+    if (t === 'bun')
+      titleBunRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (t === 'main')
+      titleMainRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (t === 'sauce')
+      titleSaucesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -64,13 +62,16 @@ export const BurgerIngredients: React.FC = () => {
       buns={buns}
       mains={mains}
       sauces={sauces}
-      titleBunRef={titleBun}
-      titleMainRef={titleMain}
-      titleSaucesRef={titleSauce}
-      bunsRef={bunRef}
-      mainsRef={mainRef}
-      saucesRef={sauceRef}
-      onTabClick={handleTabClick}
+      titleBunRef={titleBunRef}
+      titleMainRef={titleMainRef}
+      titleSaucesRef={titleSaucesRef}
+      bunsRef={bunsRef}
+      mainsRef={mainsRef}
+      saucesRef={saucesRef}
+      onTabClick={onTabClick}
+      loading={areIngredientsLoading}
     />
   );
 };
+
+export default BurgerIngredients;

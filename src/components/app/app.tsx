@@ -1,121 +1,107 @@
-import '../../index.css';
-import React, { useEffect, useMemo } from 'react';
-import styles from './app.module.css';
+import React, { useEffect } from 'react';
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
+  Navigate,
   useLocation,
   useNavigate
 } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import store from '../../services/store';
-
 import {
   ConstructorPage,
   Feed,
-  NotFound404,
-  Register,
   Login,
+  Register,
+  ForgotPassword,
   ResetPassword,
   Profile,
   ProfileOrders,
-  ForgotPassword
+  NotFound404
 } from '@pages';
-import { AppHeader, Modal, OrderInfo, IngredientDetails } from '@components';
+import '../../index.css';
+import styles from './app.module.css';
 
-import { useDispatch } from '../../services/store';
-import { fetchIngredients } from '../../services/slices/ingridientsSlice';
+import { AppHeader, Modal, IngredientDetails, OrderInfo } from '@components';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import { fetchIngredients } from '../../services/slices/ingredients-slice';
+import { selectIsAuth } from '../../services/slices/auth-slice';
 import { fetchUser } from '../../services/slices/user-slice';
-import { ProtectedRoute } from '../protected-route/ProtectedRoute';
 
-const AppContent: React.FC = () => {
-  const dispatch = useDispatch();
+// Тип для ProtectedRouteElement
+type ProtectedRouteElementProps = {
+  element: React.ReactElement;
+  onlyUnAuth?: boolean;
+};
+
+const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
+  element,
+  onlyUnAuth = false
+}) => {
+  const isAuth = useAppSelector(selectIsAuth);
+  const location = useLocation();
+
+  if (onlyUnAuth && isAuth) {
+    return <Navigate to='/' replace />;
+  }
+
+  if (!onlyUnAuth && !isAuth) {
+    // Передаём текущую локацию в state, чтобы после логина вернуть пользователя
+    return <Navigate to='/login' replace state={{ from: location }} />;
+  }
+
+  return element;
+};
+
+const App: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  const background = (location.state as { background?: Location })?.background;
+  const state = location.state as { background?: any } | undefined;
+  const background = state?.background;
 
   useEffect(() => {
     dispatch(fetchIngredients());
     dispatch(fetchUser());
   }, [dispatch]);
 
-  const closeFeedModal = useMemo(() => () => navigate('/feed'), [navigate]);
-  const closeIngredientModal = useMemo(() => () => navigate('/'), [navigate]);
-  const closeProfileOrderModal = useMemo(
-    () => () => navigate('/profile/orders'),
-    [navigate]
-  );
+  const handleCloseModal = () => {
+    navigate(-1);
+  };
 
   return (
     <div className={styles.app}>
       <AppHeader />
-
-      <Routes location={background ?? location}>
+      <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route
           path='/login'
-          element={
-            <ProtectedRoute unAuth>
-              <Login />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRouteElement onlyUnAuth element={<Login />} />}
         />
         <Route
           path='/register'
-          element={
-            <ProtectedRoute unAuth>
-              <Register />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRouteElement onlyUnAuth element={<Register />} />}
         />
         <Route
           path='/forgot-password'
           element={
-            <ProtectedRoute unAuth>
-              <ForgotPassword />
-            </ProtectedRoute>
+            <ProtectedRouteElement onlyUnAuth element={<ForgotPassword />} />
           }
         />
         <Route
           path='/reset-password'
           element={
-            <ProtectedRoute unAuth>
-              <ResetPassword />
-            </ProtectedRoute>
+            <ProtectedRouteElement onlyUnAuth element={<ResetPassword />} />
           }
         />
         <Route
           path='/profile'
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRouteElement element={<Profile />} />}
         />
         <Route
           path='/profile/orders'
-          element={
-            <ProtectedRoute>
-              <ProfileOrders />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRouteElement element={<ProfileOrders />} />}
         />
-        <Route
-          path='/profile/orders/:number'
-          element={
-            <ProtectedRoute>
-              <OrderInfo isInModal={false} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/ingredients/:id'
-          element={<IngredientDetails showTitle={true} />}
-        />
-        <Route path='/feed/:number' element={<OrderInfo isInModal={false} />} />
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
@@ -124,27 +110,29 @@ const AppContent: React.FC = () => {
           <Route
             path='/feed/:number'
             element={
-              <Modal onClose={closeFeedModal}>
-                <OrderInfo isInModal={true} />
+              <Modal title='Order details' onClose={handleCloseModal}>
+                <OrderInfo />
               </Modal>
             }
           />
           <Route
             path='/ingredients/:id'
             element={
-              <Modal title='Детали ингредиента' onClose={closeIngredientModal}>
-                <IngredientDetails showTitle={false} />
+              <Modal title='Ingredient details' onClose={handleCloseModal}>
+                <IngredientDetails />
               </Modal>
             }
           />
           <Route
             path='/profile/orders/:number'
             element={
-              <ProtectedRoute>
-                <Modal onClose={closeProfileOrderModal}>
-                  <OrderInfo isInModal={true} />
-                </Modal>
-              </ProtectedRoute>
+              <ProtectedRouteElement
+                element={
+                  <Modal title='Order details' onClose={handleCloseModal}>
+                    <OrderInfo />
+                  </Modal>
+                }
+              />
             }
           />
         </Routes>
@@ -153,12 +141,4 @@ const AppContent: React.FC = () => {
   );
 };
 
-const AppRoot: React.FC = () => (
-  <Provider store={store}>
-    <Router>
-      <AppContent />
-    </Router>
-  </Provider>
-);
-
-export default AppRoot;
+export default App;

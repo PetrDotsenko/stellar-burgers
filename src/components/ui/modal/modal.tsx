@@ -7,27 +7,18 @@ import { TModalUIProps } from './type';
 import { ModalOverlayUI } from '@ui';
 
 export const ModalUI: FC<TModalUIProps> = memo(
-  ({ title, onClose, children, dataCy, dataCyClose }) => (
+  ({ title, onClose, children }) => (
     <>
-      <div className={styles.modal} data-cy={dataCy}>
-        <div className={styles.modalInner}>
-          <div
-            className={`${styles.header} ${title === undefined ? styles.emptyHeader : ''}`}
-          >
-            <h3 className={`${styles.title} text text_type_main-large`}>
-              {title}
-            </h3>
-            <button
-              className={styles.button}
-              type='button'
-              data-cy={dataCyClose}
-              onClick={onClose}
-            >
-              <CloseIcon type='primary' />
-            </button>
-          </div>
-          <div className={styles.content}>{children}</div>
+      <div className={styles.modal}>
+        <div className={styles.header}>
+          <h3 className={`${styles.title} text text_type_main-large`}>
+            {title}
+          </h3>
+          <button className={styles.button} type='button'>
+            <CloseIcon type='primary' onClick={onClose} />
+          </button>
         </div>
+        <div className={styles.content}>{children}</div>
       </div>
       <ModalOverlayUI onClick={onClose} />
     </>

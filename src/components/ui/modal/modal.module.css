@@ -15,21 +15,10 @@
     0px 0px 1px rgba(0, 0, 0, 0.04);
 }
 
-.modalInner {
-  position: relative;
-}
-
 .header {
   display: flex;
   align-items: center;
   min-height: 64px;
-}
-
-.emptyHeader {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
 }
 
 .button {

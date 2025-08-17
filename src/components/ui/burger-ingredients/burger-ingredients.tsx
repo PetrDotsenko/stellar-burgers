@@ -5,7 +5,10 @@ import styles from './burger-ingredients.module.css';
 import { BurgerIngredientsUIProps } from './type';
 import { IngredientsCategory } from '@components';
 
-export const BurgerIngredientsUI: FC<BurgerIngredientsUIProps> = memo(
+// Расширяем пропсы, чтобы поддержать опциональный loading
+type ExtraProps = BurgerIngredientsUIProps & { loading?: boolean };
+
+export const BurgerIngredientsUI: FC<ExtraProps> = memo(
   ({
     currentTab,
     buns,
@@ -17,7 +20,8 @@ export const BurgerIngredientsUI: FC<BurgerIngredientsUIProps> = memo(
     bunsRef,
     mainsRef,
     saucesRef,
-    onTabClick
+    onTabClick,
+    loading
   }) => (
     <>
       <section className={styles.burger_ingredients}>
@@ -42,27 +46,38 @@ export const BurgerIngredientsUI: FC<BurgerIngredientsUIProps> = memo(
             </Tab>
           </ul>
         </nav>
+
         <div className={styles.content}>
-          <IngredientsCategory
-            title='Булки'
-            titleRef={titleBunRef}
-            ingredients={buns}
-            ref={bunsRef}
-          />
-          <IngredientsCategory
-            title='Начинки'
-            titleRef={titleMainRef}
-            ingredients={mains}
-            ref={mainsRef}
-          />
-          <IngredientsCategory
-            title='Соусы'
-            titleRef={titleSaucesRef}
-            ingredients={sauces}
-            ref={saucesRef}
-          />
+          {loading ? (
+            <div className={styles.loader} aria-busy='true' role='status'>
+              Загрузка ингредиентов...
+            </div>
+          ) : (
+            <>
+              <IngredientsCategory
+                title='Булки'
+                titleRef={titleBunRef}
+                ingredients={buns}
+                ref={bunsRef}
+              />
+              <IngredientsCategory
+                title='Начинки'
+                titleRef={titleMainRef}
+                ingredients={mains}
+                ref={mainsRef}
+              />
+              <IngredientsCategory
+                title='Соусы'
+                titleRef={titleSaucesRef}
+                ingredients={sauces}
+                ref={saucesRef}
+              />
+            </>
+          )}
         </div>
       </section>
     </>
   )
 );
+
+export default BurgerIngredientsUI;

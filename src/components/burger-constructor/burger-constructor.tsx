@@ -1,71 +1,55 @@
-import React, { FC, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from '../../services/store';
-import { BurgerConstructorUI } from '@ui';
-import { newUserOrder, setLastOrder } from '../../services/slices/user-slice';
-import { resetConstructor } from '../../services/slices/burgerConstructorSlice';
-import { TConstructorIngredient } from '@utils-types';
+import { FC, useMemo } from 'react';
+import { TIngredient } from '../../utils/types';
+import { BurgerConstructorUI } from '../ui';
+import { useAppSelector, useAppDispatch } from '../../services/store';
+import {
+  clearCurrentOrder,
+  selectCurrentOrder,
+  selectOrderPosting,
+  selectOrdersLoading
+} from '../../services/slices/orders-slice';
+import {
+  selectConstructorBun,
+  selectConstructorIngredients
+} from '../../services/slices/constructor-slice';
 
 export const BurgerConstructor: FC = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  // получаем нужные данные из стора
-  const isLoggedIn = useSelector((state) => state.auth.success);
-  const bun = useSelector((state) => state.constructorItems.constructorBun);
-  const fillings = useSelector(
-    (state) => state.constructorItems.constructorIngredients
+  const ingredients = useAppSelector(selectConstructorIngredients);
+  const bun = useAppSelector(selectConstructorBun);
+  const orderRequest = useAppSelector(selectOrdersLoading);
+  const orderModalData = useAppSelector(selectCurrentOrder);
+
+  // Оформление заказа (заглушка)
+  const onOrderClick = () => {
+    if (!bun || orderRequest) return;
+    console.log('Оформление заказа...');
+  };
+
+  const closeOrderModal = () => {
+    dispatch(clearCurrentOrder());
+  };
+
+  // Общая цена
+  const price = useMemo(
+    () =>
+      (bun ? bun.price * 2 : 0) +
+      ingredients.reduce<number>(
+        (sum: number, item: TIngredient) => sum + item.price,
+        0
+      ),
+    [bun, ingredients]
   );
-  const orderIsSending = useSelector((state) => state.auth.orderRequestData);
-  const orderInfo = useSelector((state) => state.auth.lastOrder);
 
-  // расчет цены
-  const totalPrice = useMemo(() => {
-    const bunPrice = bun ? bun.price * 2 : 0;
-    const fillingsPrice = fillings.reduce((sum, item) => sum + item.price, 0);
-    return bunPrice + fillingsPrice;
-  }, [bun, fillings]);
-
-  // отправка заказа
-  const handleOrderClick = () => {
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
-    if (!bun || orderIsSending) {
-      return;
-    }
-
-    const allIngredientIds = [
-      bun._id,
-      ...fillings.map((item: TConstructorIngredient) => item._id),
-      bun._id
-    ];
-
-    dispatch(newUserOrder(allIngredientIds));
-    dispatch(resetConstructor());
-  };
-
-  // закрытие модального окна
-  const handleCloseModal = () => {
-    dispatch(setLastOrder(null));
-  };
-
-  const constructorItems = {
-    bun: bun,
-    ingredients: fillings
-  };
-
-  // рендер компонента
   return (
     <BurgerConstructorUI
-      price={totalPrice}
-      orderRequest={orderIsSending}
-      constructorItems={constructorItems}
-      orderModalData={orderInfo}
-      onOrderClick={handleOrderClick}
-      closeOrderModal={handleCloseModal}
+      price={price}
+      orderRequest={orderRequest}
+      constructorItems={{ bun, ingredients }}
+      orderModalData={orderModalData}
+      onOrderClick={onOrderClick}
+      closeOrderModal={closeOrderModal}
     />
   );
 };

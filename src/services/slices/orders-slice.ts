@@ -1,0 +1,100 @@
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { getOrdersApi, orderBurgerApi, getOrderByNumberApi } from '@api';
+import { RootState } from '../root-reducer';
+import { TOrder } from '../../utils/types';
+
+type OrdersState = {
+  items: TOrder[];
+  currentOrder: TOrder | null;
+  isLoading: boolean;
+  orderPosting: boolean;
+};
+
+const ordersInitialState: OrdersState = {
+  items: [],
+  currentOrder: null,
+  isLoading: false,
+  orderPosting: false
+};
+
+export const fetchOrders = createAsyncThunk<TOrder[]>(
+  'orders/fetchOrders',
+  getOrdersApi
+);
+
+export const postOrder = createAsyncThunk<
+  { order: TOrder; name: string },
+  string[]
+>('orders/postOrder', orderBurgerApi);
+
+export const fetchOrderByNumber = createAsyncThunk<TOrder, number>(
+  'orders/fetchOrderByNumber',
+  async (number) => {
+    const res = await getOrderByNumberApi(number);
+    // API returns { success, orders }
+    return res.orders[0];
+  }
+);
+
+const ordersSlice = createSlice({
+  name: 'orders',
+  initialState: ordersInitialState,
+  reducers: {
+    clearOrders(state) {
+      state.items = [];
+      state.currentOrder = null;
+    },
+    clearCurrentOrder(state) {
+      state.currentOrder = null;
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchOrders.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(
+        fetchOrders.fulfilled,
+        (state, action: PayloadAction<TOrder[]>) => {
+          state.isLoading = false;
+          state.items = action.payload;
+        }
+      )
+
+      .addCase(postOrder.pending, (state) => {
+        state.orderPosting = true;
+      })
+      .addCase(
+        postOrder.fulfilled,
+        (state, action: PayloadAction<{ order: TOrder; name: string }>) => {
+          state.orderPosting = false;
+          if (action.payload?.order) {
+            state.items = state.items
+              ? [action.payload.order, ...state.items]
+              : [action.payload.order];
+          }
+        }
+      )
+
+      .addCase(fetchOrderByNumber.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(
+        fetchOrderByNumber.fulfilled,
+        (state, action: PayloadAction<TOrder>) => {
+          state.isLoading = false;
+          state.currentOrder = action.payload;
+        }
+      );
+  }
+});
+
+export const { clearOrders, clearCurrentOrder } = ordersSlice.actions;
+export default ordersSlice.reducer;
+
+export const selectUserOrders = (state: RootState) => state.orders.items ?? [];
+export const selectOrdersLoading = (state: RootState) => state.orders.isLoading;
+export const selectOrderPosting = (state: RootState) =>
+  state.orders.orderPosting;
+export const selectCurrentOrder = (state: RootState) =>
+  state.orders.currentOrder;
