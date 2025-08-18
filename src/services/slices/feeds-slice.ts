@@ -4,13 +4,16 @@ import { RootState } from '../root-reducer';
 import { TOrder } from '../../utils/types';
 
 type FeedsState = {
-  orders?: TOrder[];
-  total?: number;
-  totalToday?: number;
+  orders: TOrder[];
+  total: number;
+  totalToday: number;
   isLoading: boolean;
 };
 
 const feedsInitialState: FeedsState = {
+  orders: [],
+  total: 0,
+  totalToday: 0,
   isLoading: false
 };
 
@@ -21,9 +24,9 @@ const feedsSlice = createSlice({
   initialState: feedsInitialState,
   reducers: {
     clearFeeds(state) {
-      state.orders = undefined;
-      state.total = undefined;
-      state.totalToday = undefined;
+      state.orders = [];
+      state.total = 0;
+      state.totalToday = 0;
     }
   },
   extraReducers: (builder) => {
@@ -43,6 +46,7 @@ const feedsSlice = createSlice({
 export const { clearFeeds } = feedsSlice.actions;
 export default feedsSlice.reducer;
 
+export const selectFeeds = (state: RootState) => state.feeds;
 export const selectFeedsOrders = (state: RootState) => state.feeds.orders;
 export const selectFeedsTotal = (state: RootState) => state.feeds.total;
 export const selectFeedsTotalToday = (state: RootState) =>

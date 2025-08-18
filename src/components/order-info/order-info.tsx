@@ -1,14 +1,27 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
-import { useAppSelector } from '../../services/store';
-import { selectCurrentOrder } from '../../services/slices/orders-slice';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import {
+  fetchOrderByNumber,
+  selectCurrentOrder,
+  selectLoadedOrder,
+  selectOrderLoading
+} from '../../services/slices/orders-slice';
 import { selectIngredientsItems } from '../../services/slices/ingredients-slice';
+import { useParams } from 'react-router-dom';
+import { OrderInfoProps } from './type';
 
-export const OrderInfo: FC = () => {
-  const orderData = useAppSelector(selectCurrentOrder);
+export const OrderInfo: FC<OrderInfoProps> = ({ isPage }) => {
+  const params = useParams();
+  const dispatch = useAppDispatch();
+
+  const orderNumber = params.number;
+
+  const orderData = useAppSelector(selectLoadedOrder);
   const ingredients: TIngredient[] = useAppSelector(selectIngredientsItems);
+  const isLoading = useAppSelector(selectOrderLoading);
 
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients?.length) return null;
@@ -51,9 +64,13 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  useEffect(() => {
+    dispatch(fetchOrderByNumber(Number(orderNumber)));
+  }, []);
+
+  if (!orderInfo || isLoading) {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  return <OrderInfoUI orderInfo={orderInfo} isPage={isPage} />;
 };

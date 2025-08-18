@@ -1,24 +1,30 @@
-import { FC } from 'react';
-import { useAppSelector } from '../../services/store';
+import { FC, useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 import { IngredientDetailsUI } from '../ui/ingredient-details';
-import { selectIngredientsItems } from '../../services/slices/ingredients-slice';
+import {
+  selectIngredientsItems,
+  selectIngredientsLoading
+} from '../../services/slices/ingredients-slice';
 import { useMatch, useParams } from 'react-router-dom';
 import { TIngredient } from '@utils-types';
+import { IngredientDetailsProps } from './type';
 
-export const IngredientDetails: FC = () => {
+export const IngredientDetails: FC<IngredientDetailsProps> = ({ isPage }) => {
   const { id: ingredientId } = useParams<{ id: string }>();
 
   const ingredients = useAppSelector(selectIngredientsItems);
-  const areIngredientsLoading = useAppSelector(selectIngredientsItems);
-
-  if (areIngredientsLoading) {
-    return <Preloader />;
-  }
+  const areIngredientsLoading = useAppSelector(selectIngredientsLoading);
 
   const targetIngredient = ingredients.find(
     (item) => item._id === ingredientId
-  ) as TIngredient;
+  );
 
-  return <IngredientDetailsUI ingredientData={targetIngredient} />;
+  if (areIngredientsLoading || !targetIngredient) {
+    return <Preloader />;
+  }
+
+  return (
+    <IngredientDetailsUI ingredientData={targetIngredient} isPage={isPage} />
+  );
 };

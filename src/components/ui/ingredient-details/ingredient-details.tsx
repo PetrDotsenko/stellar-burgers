@@ -3,12 +3,17 @@ import styles from './ingredient-details.module.css';
 import { IngredientDetailsUIProps } from './type';
 
 export const IngredientDetailsUI: FC<IngredientDetailsUIProps> = memo(
-  ({ ingredientData }) => {
+  ({ ingredientData, isPage }) => {
     const { name, image_large, calories, proteins, fat, carbohydrates } =
       ingredientData;
 
     return (
-      <div className={styles.content}>
+      <div className={`${styles.content} ${isPage ? styles.page : ''}`}>
+        {isPage && (
+          <h1 className='text text_type_main-large mt-2 mb-4'>
+            Детали ингридиента
+          </h1>
+        )}
         <img
           className={styles.img}
           alt='изображение ингредиента.'

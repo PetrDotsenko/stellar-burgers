@@ -6,12 +6,10 @@ import styles from './constructor-page.module.css';
 import { BurgerIngredients } from '../../components';
 import { BurgerConstructor } from '../../components';
 import { Preloader } from '../../components/ui';
+import { selectIngredientsLoading } from '../../services/slices/ingredients-slice';
 
 export const ConstructorPage: FC = () => {
-  // Получаем состояние загрузки ингредиентов из стора
-  const isIngredientsLoading = useAppSelector(
-    (state) => state.ingredients.isLoading
-  );
+  const isIngredientsLoading = useAppSelector(selectIngredientsLoading);
 
   return (
     <>

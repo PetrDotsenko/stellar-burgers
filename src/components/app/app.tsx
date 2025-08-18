@@ -4,7 +4,8 @@ import {
   Route,
   Navigate,
   useLocation,
-  useNavigate
+  useNavigate,
+  useParams
 } from 'react-router-dom';
 import {
   ConstructorPage,
@@ -23,8 +24,16 @@ import styles from './app.module.css';
 import { AppHeader, Modal, IngredientDetails, OrderInfo } from '@components';
 import { useAppDispatch, useAppSelector } from '../../services/store';
 import { fetchIngredients } from '../../services/slices/ingredients-slice';
-import { selectIsAuth } from '../../services/slices/auth-slice';
-import { fetchUser } from '../../services/slices/user-slice';
+import {
+  selectIsAuth,
+  selectUserLoading
+} from '../../services/slices/user-slice';
+import { fetchUser, selectUser } from '../../services/slices/user-slice';
+import {
+  selectLoadedOrder,
+  selectOrderLoading
+} from '../../services/slices/orders-slice';
+import { Preloader } from '@ui';
 
 // Тип для ProtectedRouteElement
 type ProtectedRouteElementProps = {
@@ -38,6 +47,11 @@ const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
 }) => {
   const isAuth = useAppSelector(selectIsAuth);
   const location = useLocation();
+  const isUserLoading = useAppSelector(selectUserLoading);
+
+  if (isUserLoading) {
+    return <Preloader />;
+  }
 
   if (onlyUnAuth && isAuth) {
     return <Navigate to='/' replace />;
@@ -56,7 +70,11 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const state = location.state as { background?: any } | undefined;
+  const orderData = useAppSelector(selectLoadedOrder);
+  const isOrderLoading = useAppSelector(selectOrderLoading);
+  const orderNumber = isOrderLoading ? '' : `#${orderData?.number}`;
+
+  const state = location.state as { background?: Location } | undefined;
   const background = state?.background;
 
   useEffect(() => {
@@ -102,6 +120,12 @@ const App: React.FC = () => {
           path='/profile/orders'
           element={<ProtectedRouteElement element={<ProfileOrders />} />}
         />
+        <Route path='/feed/:number' element={<OrderInfo isPage />} />
+        <Route path='/ingredients/:id' element={<IngredientDetails isPage />} />
+        <Route
+          path='/profile/orders/:number'
+          element={<ProtectedRouteElement element={<OrderInfo isPage />} />}
+        />
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
@@ -110,7 +134,7 @@ const App: React.FC = () => {
           <Route
             path='/feed/:number'
             element={
-              <Modal title='Order details' onClose={handleCloseModal}>
+              <Modal title={orderNumber} onClose={handleCloseModal}>
                 <OrderInfo />
               </Modal>
             }
@@ -118,7 +142,7 @@ const App: React.FC = () => {
           <Route
             path='/ingredients/:id'
             element={
-              <Modal title='Ingredient details' onClose={handleCloseModal}>
+              <Modal title='Детали ингридиента' onClose={handleCloseModal}>
                 <IngredientDetails />
               </Modal>
             }
@@ -128,7 +152,7 @@ const App: React.FC = () => {
             element={
               <ProtectedRouteElement
                 element={
-                  <Modal title='Order details' onClose={handleCloseModal}>
+                  <Modal title={orderNumber} onClose={handleCloseModal}>
                     <OrderInfo />
                   </Modal>
                 }

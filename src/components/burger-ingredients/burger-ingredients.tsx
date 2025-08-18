@@ -13,7 +13,6 @@ import {
 import { TIngredient } from '../../utils/types';
 
 export const BurgerIngredients: FC = () => {
-  // const dispatch = useAppDispatch();
   const ingredients = useAppSelector(selectIngredientsItems);
   const areIngredientsLoading = useAppSelector(selectIngredientsLoading);
 
@@ -29,10 +28,6 @@ export const BurgerIngredients: FC = () => {
   const [bunsRef, inViewBuns] = useInView({ threshold: 0 });
   const [mainsRef, inViewFilling] = useInView({ threshold: 0 });
   const [saucesRef, inViewSauces] = useInView({ threshold: 0 });
-
-  // useEffect(() => {
-  //   dispatch(fetchIngredients());
-  // }, [dispatch]);
 
   useEffect(() => {
     if (inViewBuns) {

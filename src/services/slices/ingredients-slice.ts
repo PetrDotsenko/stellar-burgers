@@ -33,7 +33,7 @@ const ingredientsSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(fetchIngredients.fulfilled, (state, action) => {
-        state.items = action.payload
+        state.items = action.payload;
         state.isLoading = false;
       });
   }

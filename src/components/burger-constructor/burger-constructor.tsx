@@ -4,27 +4,34 @@ import { BurgerConstructorUI } from '../ui';
 import { useAppSelector, useAppDispatch } from '../../services/store';
 import {
   clearCurrentOrder,
+  postOrder,
   selectCurrentOrder,
-  selectOrderPosting,
-  selectOrdersLoading
+  selectOrderPosting
 } from '../../services/slices/orders-slice';
-import {
-  selectConstructorBun,
-  selectConstructorIngredients
-} from '../../services/slices/constructor-slice';
+import { selectConstructor } from '../../services/slices/constructor-slice';
+import { selectIsAuth } from '../../services/slices/user-slice';
+import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const ingredients = useAppSelector(selectConstructorIngredients);
-  const bun = useAppSelector(selectConstructorBun);
-  const orderRequest = useAppSelector(selectOrdersLoading);
+  const burgerConstructor = useAppSelector(selectConstructor);
+  const orderRequest = useAppSelector(selectOrderPosting);
   const orderModalData = useAppSelector(selectCurrentOrder);
+  const isAuth = useAppSelector(selectIsAuth);
 
-  // Оформление заказа (заглушка)
+  const { bun, ingredients } = burgerConstructor;
+
   const onOrderClick = () => {
+    if (!isAuth) {
+      navigate('/login');
+    }
+
     if (!bun || orderRequest) return;
-    console.log('Оформление заказа...');
+    const ids = ingredients.map((item) => item._id);
+    ids.push(bun._id);
+    dispatch(postOrder(ids));
   };
 
   const closeOrderModal = () => {
@@ -46,7 +53,7 @@ export const BurgerConstructor: FC = () => {
     <BurgerConstructorUI
       price={price}
       orderRequest={orderRequest}
-      constructorItems={{ bun, ingredients }}
+      constructorItems={burgerConstructor}
       orderModalData={orderModalData}
       onOrderClick={onOrderClick}
       closeOrderModal={closeOrderModal}

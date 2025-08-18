@@ -6,14 +6,18 @@ import { TOrder } from '../../utils/types';
 type OrdersState = {
   items: TOrder[];
   currentOrder: TOrder | null;
+  loadedOrder: TOrder | null;
   isLoading: boolean;
+  isListLoading: boolean;
   orderPosting: boolean;
 };
 
 const ordersInitialState: OrdersState = {
   items: [],
   currentOrder: null,
+  loadedOrder: null,
   isLoading: false,
+  isListLoading: false,
   orderPosting: false
 };
 
@@ -51,12 +55,12 @@ const ordersSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchOrders.pending, (state) => {
-        state.isLoading = true;
+        state.isListLoading = true;
       })
       .addCase(
         fetchOrders.fulfilled,
         (state, action: PayloadAction<TOrder[]>) => {
-          state.isLoading = false;
+          state.isListLoading = false;
           state.items = action.payload;
         }
       )
@@ -72,6 +76,7 @@ const ordersSlice = createSlice({
             state.items = state.items
               ? [action.payload.order, ...state.items]
               : [action.payload.order];
+            state.currentOrder = action.payload.order;
           }
         }
       )
@@ -83,7 +88,7 @@ const ordersSlice = createSlice({
         fetchOrderByNumber.fulfilled,
         (state, action: PayloadAction<TOrder>) => {
           state.isLoading = false;
-          state.currentOrder = action.payload;
+          state.loadedOrder = action.payload;
         }
       );
   }
@@ -92,9 +97,12 @@ const ordersSlice = createSlice({
 export const { clearOrders, clearCurrentOrder } = ordersSlice.actions;
 export default ordersSlice.reducer;
 
-export const selectUserOrders = (state: RootState) => state.orders.items ?? [];
-export const selectOrdersLoading = (state: RootState) => state.orders.isLoading;
+export const selectUserOrders = (state: RootState) => state.orders.items;
+export const selectOrdersListLoading = (state: RootState) =>
+  state.orders.isListLoading;
+export const selectOrderLoading = (state: RootState) => state.orders.isLoading;
 export const selectOrderPosting = (state: RootState) =>
   state.orders.orderPosting;
 export const selectCurrentOrder = (state: RootState) =>
   state.orders.currentOrder;
+export const selectLoadedOrder = (state: RootState) => state.orders.loadedOrder;
