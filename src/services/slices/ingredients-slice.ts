@@ -35,6 +35,10 @@ const ingredientsSlice = createSlice({
       .addCase(fetchIngredients.fulfilled, (state, action) => {
         state.items = action.payload;
         state.isLoading = false;
+      })
+      .addCase(fetchIngredients.rejected, (state) => {
+        state.isLoading = false;
+        alert('Произошла ошибка при загрузке ингридиентов');
       });
   }
 });

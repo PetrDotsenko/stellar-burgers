@@ -39,6 +39,10 @@ const feedsSlice = createSlice({
         state.orders = action.payload.orders;
         state.total = action.payload.total;
         state.totalToday = action.payload.totalToday;
+      })
+      .addCase(fetchFeeds.rejected, (state) => {
+        state.isLoading = false;
+        alert('Произошла ошибка при загрузке заказов');
       });
   }
 });

@@ -1,12 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-  useNavigate,
-  useParams
-} from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import {
   ConstructorPage,
   Feed,
@@ -24,46 +17,12 @@ import styles from './app.module.css';
 import { AppHeader, Modal, IngredientDetails, OrderInfo } from '@components';
 import { useAppDispatch, useAppSelector } from '../../services/store';
 import { fetchIngredients } from '../../services/slices/ingredients-slice';
-import {
-  selectIsAuth,
-  selectUserLoading
-} from '../../services/slices/user-slice';
-import { fetchUser, selectUser } from '../../services/slices/user-slice';
+import { fetchUser } from '../../services/slices/user-slice';
 import {
   selectLoadedOrder,
   selectOrderLoading
 } from '../../services/slices/orders-slice';
-import { Preloader } from '@ui';
-
-// Тип для ProtectedRouteElement
-type ProtectedRouteElementProps = {
-  element: React.ReactElement;
-  onlyUnAuth?: boolean;
-};
-
-const ProtectedRouteElement: React.FC<ProtectedRouteElementProps> = ({
-  element,
-  onlyUnAuth = false
-}) => {
-  const isAuth = useAppSelector(selectIsAuth);
-  const location = useLocation();
-  const isUserLoading = useAppSelector(selectUserLoading);
-
-  if (isUserLoading) {
-    return <Preloader />;
-  }
-
-  if (onlyUnAuth && isAuth) {
-    return <Navigate to='/' replace />;
-  }
-
-  if (!onlyUnAuth && !isAuth) {
-    // Передаём текущую локацию в state, чтобы после логина вернуть пользователя
-    return <Navigate to='/login' replace state={{ from: location }} />;
-  }
-
-  return element;
-};
+import { ProtectedRouteElement } from '../protected-route-element';
 
 const App: React.FC = () => {
   const location = useLocation();

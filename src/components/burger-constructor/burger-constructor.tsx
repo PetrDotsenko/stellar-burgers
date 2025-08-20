@@ -26,10 +26,12 @@ export const BurgerConstructor: FC = () => {
   const onOrderClick = () => {
     if (!isAuth) {
       navigate('/login');
+      return;
     }
 
     if (!bun || orderRequest) return;
     const ids = ingredients.map((item) => item._id);
+    ids.push(bun._id);
     ids.push(bun._id);
     dispatch(postOrder(ids));
   };

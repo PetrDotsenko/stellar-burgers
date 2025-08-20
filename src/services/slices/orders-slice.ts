@@ -64,6 +64,10 @@ const ordersSlice = createSlice({
           state.items = action.payload;
         }
       )
+      .addCase(fetchOrders.rejected, (state) => {
+        state.isListLoading = false;
+        alert('Произошла ошибка при загрузке заказов');
+      })
 
       .addCase(postOrder.pending, (state) => {
         state.orderPosting = true;
@@ -80,6 +84,10 @@ const ordersSlice = createSlice({
           }
         }
       )
+      .addCase(postOrder.rejected, (state) => {
+        state.orderPosting = false;
+        alert('Произошла ошибка при создании заказа');
+      })
 
       .addCase(fetchOrderByNumber.pending, (state) => {
         state.isLoading = true;
@@ -90,7 +98,11 @@ const ordersSlice = createSlice({
           state.isLoading = false;
           state.loadedOrder = action.payload;
         }
-      );
+      )
+      .addCase(fetchOrderByNumber.rejected, (state) => {
+        state.isLoading = false;
+        alert('Произошла ошибка при загрузке деталей заказа');
+      });
   }
 });
 

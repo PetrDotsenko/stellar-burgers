@@ -99,6 +99,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchUser.rejected, (state) => {
         state.isLoading = false;
+        alert('Произошла ошибка при загрузке данных пользователя');
       })
 
       .addCase(patchUser.pending, (state) => {
@@ -107,6 +108,10 @@ const userSlice = createSlice({
       .addCase(patchUser.fulfilled, (state, action: PayloadAction<TUser>) => {
         state.updateLoading = false;
         state.user = action.payload;
+      })
+      .addCase(patchUser.rejected, (state) => {
+        state.updateLoading = false;
+        alert('Произошла ошибка при обновлении данных пользователя');
       })
 
       .addCase(registerUser.pending, (state) => {
@@ -120,6 +125,10 @@ const userSlice = createSlice({
           state.isAuth = true;
         }
       )
+      .addCase(registerUser.rejected, (state) => {
+        state.isLoading = false;
+        alert('Произошла ошибка при регистрации');
+      })
 
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
@@ -132,6 +141,10 @@ const userSlice = createSlice({
           state.isAuth = true;
         }
       )
+      .addCase(loginUser.rejected, (state) => {
+        state.isLoading = false;
+        alert('Произошла ошибка при входе');
+      })
 
       .addCase(logoutUser.pending, (state) => {
         state.logoutLoading = true;
@@ -140,6 +153,10 @@ const userSlice = createSlice({
         state.logoutLoading = false;
         state.user = null;
         state.isAuth = false;
+      })
+      .addCase(logoutUser.rejected, (state) => {
+        state.logoutLoading = false;
+        alert('Произошла ошибка при выходе');
       });
   }
 });
