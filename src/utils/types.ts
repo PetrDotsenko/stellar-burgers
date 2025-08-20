@@ -37,4 +37,10 @@ export type TUser = {
   name: string;
 };
 
+export type TFeed = {
+  orders: TOrder[];
+  total: number;
+  totalToday: number;
+};
+
 export type TTabMode = 'bun' | 'sauce' | 'main';

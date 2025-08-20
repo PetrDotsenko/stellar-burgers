@@ -1,25 +1,30 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import {
+  fetchOrderByNumber,
+  selectCurrentOrder,
+  selectLoadedOrder,
+  selectOrderLoading
+} from '../../services/slices/orders-slice';
+import { selectIngredientsItems } from '../../services/slices/ingredients-slice';
+import { useParams } from 'react-router-dom';
+import { OrderInfoProps } from './type';
 
-export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+export const OrderInfo: FC<OrderInfoProps> = ({ isPage }) => {
+  const params = useParams();
+  const dispatch = useAppDispatch();
 
-  const ingredients: TIngredient[] = [];
+  const orderNumber = params.number;
 
-  /* Готовим данные для отображения */
+  const orderData = useAppSelector(selectLoadedOrder);
+  const ingredients: TIngredient[] = useAppSelector(selectIngredientsItems);
+  const isLoading = useAppSelector(selectOrderLoading);
+
   const orderInfo = useMemo(() => {
-    if (!orderData || !ingredients.length) return null;
+    if (!orderData || !ingredients?.length) return null;
 
     const date = new Date(orderData.createdAt);
 
@@ -43,7 +48,7 @@ export const OrderInfo: FC = () => {
 
         return acc;
       },
-      {}
+      {} as TIngredientsWithCount
     );
 
     const total = Object.values(ingredientsInfo).reduce(
@@ -59,9 +64,13 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  useEffect(() => {
+    dispatch(fetchOrderByNumber(Number(orderNumber)));
+  }, []);
+
+  if (!orderInfo || isLoading) {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  return <OrderInfoUI orderInfo={orderInfo} isPage={isPage} />;
 };
